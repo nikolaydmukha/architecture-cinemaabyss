@@ -1,0 +1,30 @@
+@startuml Cinemaabyss: To-Be
+!include C4_Container.puml
+
+title Cinemaabyss: To-Be Architecture (C4 Container Diagram)
+
+Person(user, "Пользователь", "Смотрит фильмы, оценивает, управляет подпиской")
+
+System_Boundary(cinema, "Cinemaabyss") {
+    Container(gateway, "API Gateway / Proxy Service", "Единая точка входа. Маршрутизация запросов между монолитом и микросервисами. Поддержка постепенной миграции по Strangler Fig")
+    Container(monolith, "Monolith(Legacy)", "Управление пользователями, платежами и подписками. Тут функциональность, не вынесенная в микросервисы")
+    Container(movies, "Movies Service",  "Управление метаданными фильмов, жанрами и рейтингами")
+    Container(events, "Events Service", "Публикация и обработка событий для интеграции компонентов")
+    ContainerDb(db, "PostgreSQL", "Хранение данных")
+    ContainerQueue(kafka, "Apache Kafka", "Передача событий между сервисами")
+}
+
+Rel(user, gateway, "Отправляет HTTP-запросы")
+Rel(gateway, movies, "Маршрутизирует запросы о фильмах")
+Rel(gateway, monolith, "Маршрутизирует запросы пользователей, платежей и подписок")
+
+Rel(movies, db, "Читает и изменяет данные фильмов")
+Rel(monolith, db, "Работает с данными монолита")
+
+Rel(movies, events, "Передает события о фильмах")
+Rel(monolith, events, "Передает события пользователей и платежей")
+
+Rel(events, kafka, "События")
+
+SHOW_LEGEND()
+@enduml
