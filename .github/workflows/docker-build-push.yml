@@ -34,6 +34,9 @@ jobs:
         run: |
           echo "REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -65,6 +68,7 @@ jobs:
           labels: ${{ steps.meta-monolith.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
 
       # --- 2. MOVIES SERVICE ---
       - name: Extract metadata for Movies Service
@@ -87,6 +91,7 @@ jobs:
           labels: ${{ steps.meta-movies.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
 
       # --- 3. EVENTS SERVICE ---
       - name: Extract metadata for Events Service
@@ -109,6 +114,7 @@ jobs:
           labels: ${{ steps.meta-events.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
 
       # --- 4. PROXY SERVICE ---
       - name: Extract metadata for Proxy Service
@@ -131,3 +137,4 @@ jobs:
           labels: ${{ steps.meta-proxy.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
