@@ -1,15 +1,12 @@
-{{- if .Values.eventsService.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: events-service
-  namespace: {{ .Values.global.namespace }}
+  namespace: cinemaabyss
   labels:
     app: events-service
-    app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.eventsService.replicas }}
+  replicas: 1
   selector:
     matchLabels:
       app: events-service
@@ -23,19 +20,60 @@ spec:
       labels:
         app: events-service
     spec:
+      imagePullSecrets:
+        - name: dockerconfigjson
       containers:
-      - name: events-service
-       .... тут
+        - name: events-service
+          image: ghcr.io/nikolaydmukha/architecture-cinemaabyss/events-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+          env:
+            - name: PORT
+              value: "8082"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "cinemaabyss-kafka:9092"
+            - name: DB_CONNECTION_STRING
+              value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
+          envFrom:
+            - configMapRef:
+                name: cinemaabyss-config
+            - secretRef:
+                name: cinemaabyss-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "768Mi"
+            limits:
+              cpu: "300m"
+              memory: "768Mi"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/healthproxy
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: events-service
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    app: events-service
-    app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+  namespace: cinemaabyss
 spec:
- ........ и тут
-{{- end }}
+  selector:
+    app: events-service
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: ClusterIP
