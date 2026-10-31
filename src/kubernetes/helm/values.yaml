@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJnaGNyLmlvIjogewogICAgICAiYXV0aCI6ICJibWxyYjJ4aGVXUnRkV3RvWVRwbmFIQmZjVlpIUTJKWk5ubGFWV3RIU0doTmFHZHNTbWMxVm5CU2FHY3dTV1ExTUdaeGFFRjIiCiAgICB9CiAgfQp9Cg==
 # Database configuration
 database:
   host: postgres
@@ -33,7 +33,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/nikolaydmukha/architecture-cinemaabyss/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -53,7 +53,7 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/nikolaydmukha/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -73,7 +73,7 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/nikolaydmukha/architecture-cinemaabyss/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -93,7 +93,7 @@ moviesService:
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/nikolaydmukha/architecture-cinemaabyss/events-service:latest
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -143,8 +143,8 @@ kafka:
 zookeeper:
   enabled: true
   image:
-    repository: wurstmeister/zookeeper
-    tag: latest
+    repository: zookeeper
+    tag: 3.9.3
     pullPolicy: IfNotPresent
   replicas: 1
   resources:
@@ -177,6 +177,10 @@ ingress:
           pathType: Prefix
           service: events-service
           port: 8082
+        - path: /api/movies
+          pathType: Prefix
+          service: movies-service
+          port: 8081
 
 # Application configuration
 config:
